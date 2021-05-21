@@ -335,7 +335,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * never be used in index calculations because of table bounds.
      */
     static final int hash(Object key) {
-        int h;
+        int h;//        //混合高位和低位
         return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
     }
 
@@ -381,7 +381,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         n |= n >>> 2;
         n |= n >>> 4;
         n |= n >>> 8;
-        n |= n >>> 16;
+        n |= n >>> 16;//        //把二进制中0 全部补齐。拿到最近的2的倍数。
         return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
     }
 
@@ -679,19 +679,19 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         int oldCap = (oldTab == null) ? 0 : oldTab.length;
         int oldThr = threshold;
         int newCap, newThr = 0;
-        if (oldCap > 0) {
+        if (oldCap > 0) {            //上限了，不扩了 2的30次方
             if (oldCap >= MAXIMUM_CAPACITY) {
                 threshold = Integer.MAX_VALUE;
                 return oldTab;
             }
             else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY &&
-                     oldCap >= DEFAULT_INITIAL_CAPACITY)
+                     oldCap >= DEFAULT_INITIAL_CAPACITY)            //2倍扩容
                 newThr = oldThr << 1; // double threshold
         }
         else if (oldThr > 0) // initial capacity was placed in threshold
             newCap = oldThr;
         else {               // zero initial threshold signifies using defaults
-            newCap = DEFAULT_INITIAL_CAPACITY;
+            newCap = DEFAULT_INITIAL_CAPACITY;            //新的阈值
             newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
         }
         if (newThr == 0) {
@@ -701,18 +701,18 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         }
         threshold = newThr;
         @SuppressWarnings({"rawtypes","unchecked"})
-        Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];
+        Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];        //新建数组
         table = newTab;
-        if (oldTab != null) {
+        if (oldTab != null) {            //迁移老数据
             for (int j = 0; j < oldCap; ++j) {
                 Node<K,V> e;
-                if ((e = oldTab[j]) != null) {
+                if ((e = oldTab[j]) != null) {                    //置空
                     oldTab[j] = null;
-                    if (e.next == null)
-                        newTab[e.hash & (newCap - 1)] = e;
-                    else if (e instanceof TreeNode)
+                    if (e.next == null)                    //没有哈希冲突，只有一个
+                        newTab[e.hash & (newCap - 1)] = e;                        //与  容量-1   就全都是1111111111111
+                    else if (e instanceof TreeNode)                        //已经树化的
                         ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
-                    else { // preserve order
+                    else { // preserve order                        //链表化的，扩容是2倍，索引根据尾巴的最后一位0 1 就只到是否需要移动。0不动，其他加一个容量。
                         Node<K,V> loHead = null, loTail = null;
                         Node<K,V> hiHead = null, hiTail = null;
                         Node<K,V> next;
@@ -2162,7 +2162,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                 }
             }
 
-            if (loHead != null) {
+            if (loHead != null) {                //lc小于6
                 if (lc <= UNTREEIFY_THRESHOLD)
                     tab[index] = loHead.untreeify(map);
                 else {

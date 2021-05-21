@@ -402,14 +402,14 @@ public abstract class ClassLoader {
         throws ClassNotFoundException
     {
         synchronized (getClassLoadingLock(name)) {
-            // First, check if the class has already been loaded
+            // First, check if the class has already been loaded.检查是否被加载过
             Class<?> c = findLoadedClass(name);
             if (c == null) {
                 long t0 = System.nanoTime();
                 try {
-                    if (parent != null) {
+                    if (parent != null) {//父类中查找
                         c = parent.loadClass(name, false);
-                    } else {
+                    } else {//没有parent。就是根ClassLOader
                         c = findBootstrapClassOrNull(name);
                     }
                 } catch (ClassNotFoundException e) {
@@ -417,7 +417,7 @@ public abstract class ClassLoader {
                     // from the non-null parent class loader
                 }
 
-                if (c == null) {
+                if (c == null) {//没找到，子类自己处理
                     // If still not found, then invoke findClass in order
                     // to find the class.
                     long t1 = System.nanoTime();
@@ -429,7 +429,7 @@ public abstract class ClassLoader {
                     sun.misc.PerfCounter.getFindClasses().increment();
                 }
             }
-            if (resolve) {
+            if (resolve) {//链接指定的类
                 resolveClass(c);
             }
             return c;
