@@ -2254,11 +2254,11 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * @param check if <0, don't check resize, if <= 1 only check if uncontended
      */
     private final void addCount(long x, int check) {
-        CounterCell[] as; long b, s;
+        CounterCell[] as; long b, s;////更新baseCount，table的数量，counterCells表示元素个数的变化
         if ((as = counterCells) != null ||
             !U.compareAndSwapLong(this, BASECOUNT, b = baseCount, s = b + x)) {
             CounterCell a; long v; int m;
-            boolean uncontended = true;
+            boolean uncontended = true;// //如果多个线程都在执行，则CAS失败，执行fullAddCount，全部加入count
             if (as == null || (m = as.length - 1) < 0 ||
                 (a = as[ThreadLocalRandom.getProbe() & m]) == null ||
                 !(uncontended =
@@ -2269,7 +2269,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
             if (check <= 1)
                 return;
             s = sumCount();
-        }
+        }//check大于0 表示需要扩容
         if (check >= 0) {
             Node<K,V>[] tab, nt; int n, sc;
             while (s >= (long)(sc = sizeCtl) && (tab = table) != null &&
@@ -2282,7 +2282,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                         break;
                     if (U.compareAndSwapInt(this, SIZECTL, sc, sc + 1))
                         transfer(tab, nt);
-                }
+                }//当前线程主打发起扩容操作
                 else if (U.compareAndSwapInt(this, SIZECTL, sc,
                                              (rs << RESIZE_STAMP_SHIFT) + 2))
                     transfer(tab, null);
