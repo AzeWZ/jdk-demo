@@ -1628,9 +1628,9 @@ public abstract class AbstractQueuedSynchronizer
      * @param node the node
      * @return true if is reacquiring
      */
-    final boolean isOnSyncQueue(Node node) {
+    final boolean isOnSyncQueue(Node node) {//如果成了，在Condition中，不在AQS中
         if (node.waitStatus == Node.CONDITION || node.prev == null)
-            return false;
+            return false;//如果next不为空，就在AQS的同步队列中
         if (node.next != null) // If has successor, it must be on queue
             return true;
         /*
@@ -1847,16 +1847,16 @@ public abstract class AbstractQueuedSynchronizer
          */
         private Node addConditionWaiter() {
             Node t = lastWaiter;
-            // If lastWaiter is cancelled, clean out.
-            if (t != null && t.waitStatus != Node.CONDITION) {
-                unlinkCancelledWaiters();
+            // If lastWaiter is cancelled, clean out.，Condition -2 1 l两种状态，
+            if (t != null && t.waitStatus != Node.CONDITION) {//状态不是空的 ，也不是 1
+                unlinkCancelledWaiters();//移除无效节点
                 t = lastWaiter;
-            }
+            }//构建一个为2的节点
             Node node = new Node(Thread.currentThread(), Node.CONDITION);
             if (t == null)
                 firstWaiter = node;
             else
-                t.nextWaiter = node;
+                t.nextWaiter = node;//尾插发
             lastWaiter = node;
             return node;
         }
@@ -2032,11 +2032,11 @@ public abstract class AbstractQueuedSynchronizer
         public final void await() throws InterruptedException {
             if (Thread.interrupted())
                 throw new InterruptedException();
-            Node node = addConditionWaiter();
-            int savedState = fullyRelease(node);
+            Node node = addConditionWaiter();//构建一个Condition等待节点，并添加到Condition队列中
+            int savedState = fullyRelease(node); //释放掉锁
             int interruptMode = 0;
-            while (!isOnSyncQueue(node)) {
-                LockSupport.park(this);
+            while (!isOnSyncQueue(node)) {//如果当前队列不在Queue中。
+                LockSupport.park(this);//挂起线程
                 if ((interruptMode = checkInterruptWhileWaiting(node)) != 0)
                     break;
             }
